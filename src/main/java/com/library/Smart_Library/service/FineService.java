@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Optional;
@@ -37,12 +38,10 @@ public class FineService extends BaseService {
   private List<FineCalculationStrategy> fineStrategies;
 
   @Autowired
-  private TransactionService transactionService;
-
-  @Autowired
   private FineRepository fineRepository;
 
   private static final double DEFAULT_RATE = 10.0;
+  private static final int BORROW_DAYS = 14;
 
   /**
    * Calculates and persists fine for one transaction when overdue.
@@ -63,14 +62,15 @@ public class FineService extends BaseService {
       if (!"ISSUED".equalsIgnoreCase(transaction.getStatus())) {
         return Optional.empty();
       }
-      if (transaction.getDueDate() == null || !LocalDate.now().isAfter(transaction.getDueDate())) {
+      LocalDate dueDate = resolveDueDate(transaction);
+      if (dueDate == null || !LocalDate.now().isAfter(dueDate)) {
         return Optional.empty();
       }
 
-      long overdueDays = ChronoUnit.DAYS.between(transaction.getDueDate(), LocalDate.now());
-      String role = userRepository.findById(transaction.getUserId()).map(u -> u.getRole()).orElse("STUDENT");
+      long overdueDays = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
+      String role = resolveRole(transaction);
       double fineAmount = resolveStrategy(role).calculate(overdueDays);
-      return Optional.of(transactionService.createOrUpdateFineForTransaction(transaction, fineAmount));
+      return Optional.of(createOrUpdateFineForTransaction(transaction, fineAmount));
     });
   }
 
@@ -88,14 +88,15 @@ public class FineService extends BaseService {
         if (!"ISSUED".equalsIgnoreCase(transaction.getStatus())) {
           continue;
         }
-        if (transaction.getDueDate() == null || !currentDate.isAfter(transaction.getDueDate())) {
+        LocalDate dueDate = resolveDueDate(transaction);
+        if (dueDate == null || !currentDate.isAfter(dueDate)) {
           continue;
         }
 
-        long overdueDays = ChronoUnit.DAYS.between(transaction.getDueDate(), currentDate);
-        String role = userRepository.findById(transaction.getUserId()).map(u -> u.getRole()).orElse("STUDENT");
+        long overdueDays = ChronoUnit.DAYS.between(dueDate, currentDate);
+        String role = resolveRole(transaction);
         double amount = resolveStrategy(role).calculate(overdueDays);
-        calculatedFines.add(transactionService.createOrUpdateFineForTransaction(transaction, amount));
+        calculatedFines.add(createOrUpdateFineForTransaction(transaction, amount));
       }
 
       return calculatedFines;
@@ -160,5 +161,31 @@ public class FineService extends BaseService {
             return overdueDays * DEFAULT_RATE;
           }
         });
+  }
+
+  private LocalDate resolveDueDate(Transaction transaction) {
+    LocalDateTime issueDate = transaction.getIssueDate();
+    if (issueDate == null) {
+      return null;
+    }
+    return issueDate.toLocalDate().plusDays(BORROW_DAYS);
+  }
+
+  private String resolveRole(Transaction transaction) {
+    if (transaction.getUser() != null && transaction.getUser().getRole() != null) {
+      return transaction.getUser().getRole();
+    }
+    return "STUDENT";
+  }
+
+  private Fine createOrUpdateFineForTransaction(Transaction transaction, double amount) {
+    Optional<Fine> existingFineOpt = fineRepository.findByTransactionId(transaction.getId());
+    Fine fine = existingFineOpt.orElseGet(Fine::new);
+    fine.setTransactionId(transaction.getId());
+    fine.setAmount(amount);
+    if (fine.getPaymentStatus() == null || fine.getPaymentStatus().isBlank()) {
+      fine.setPaymentStatus("PENDING");
+    }
+    return fineRepository.save(fine);
   }
 }
