@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+<main class="page">
+    <section class="panel panel-shell">
+        <h1 class="page-title">Library Dashboard</h1>
+        <p class="subtitle">A cleaner workspace for catalog, transactions, and finance.</p>
+        <p class="page-caption">Use one focused page per module.</p>
+
+        <div class="module-grid">
+            <article class="module-card">
+                <h3>Book Catalog</h3>
+                <p>View all books and stock levels.</p>
+                <a class="btn" th:href="@{/books}">Open Catalog</a>
+            </article>
+
+            <article class="module-card">
+                <h3>Transactions</h3>
+                <p>Issue or return books in a dedicated page.</p>
+                <a class="btn btn-secondary" th:href="@{/transactions}">Open Transactions</a>
+            </article>
+
+            <article class="module-card">
+                <h3>Fine Tracking</h3>
+                <p>Track pending and paid fines.</p>
+                <a class="btn" th:href="@{/fines}">Open Fines</a>
+            </article>
+
+            <article class="module-card">
+                <h3>Session</h3>
+                <p>End current login session safely.</p>
+                <a class="btn btn-secondary" href="/login?logout">Logout</a>
+            </article>
+        </div>
+
+        <div>
+            <div class="link-row" style="margin-top:4px;">
+                <a class="link-chip" th:href="@{/transactions}">Go to Transactions</a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/layout :: moduleFooter('Smart Library Team', 'Prajwal Kittali | Pranav Gaonkar | Prashant Radder | Pranav Sharma')}"></div>
+
+    </section>
+</main>
+</body>
+</html>

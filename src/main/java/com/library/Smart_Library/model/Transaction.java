@@ -1,6 +1,6 @@
 package com.library.Smart_Library.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
