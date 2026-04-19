@@ -43,6 +43,7 @@ Smart Library Management System is a full-stack Spring Boot MVC project for hand
 - [📖 17. Glossary](#-17-glossary)
 - [🤝 18. How to Contribute](#-18-how-to-contribute)
 - [📜 19. License and Credits](#-19-license-and-credits)
+- [✅ 20. Simple Run After Clone](#-20-simple-run-after-clone)
 
 ───────────────────────────────
 
@@ -162,60 +163,68 @@ Browser/User
 
 ## 🧠 6. GRASP Principles by Member
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Prajwal Kittali — Security and Auth Lead │
-│ 🧩 GRASP Principles Applied │
-│ • Information Expert → User.java — lock state lives in User │
-│ • Creator → DefaultUserInitializer.java — seeds admin user │
-│ • Controller → AuthController.java — routes login events │
-│ • Low Coupling → AuthService.java — result record abstraction│
-│ 💻 Code Snippet │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🧩 GRASP Applied │
+│ • Information Expert → User.java — user owns lock/unlock behavior │
+│ • Creator → DefaultUserInitializer.java — creates default admin │
+│ • Controller → AuthController.java — handles login UI flow │
+│ • Low Coupling → AuthService.java — returns structured login result │
+│ │
+│ 💻 Snippet │
 │ if (user.getPassword().equals(password)) { │
 │ user.resetLockStateOnSuccess(); │
 │ userRepository.save(user); │
 │ } │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Pranav G — Catalog Module Lead │
-│ 🧩 GRASP Principles Applied │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🧩 GRASP Applied │
 │ • Information Expert → Book.java — inventory state in model │
-│ • Controller → BookController.java — UI event intake │
-│ • Low Coupling → BookService.java — keeps controller thin │
-│ • High Cohesion → BookService.java — focused on catalog only│
-│ 💻 Code Snippet │
+│ • Controller → BookController.java — accepts catalog events │
+│ • Low Coupling → BookService.java — controller delegates business logic │
+│ • High Cohesion → BookService.java — single focused catalog service │
+│ │
+│ 💻 Snippet │
 │ if (book.getQuantity() <= 0) { │
 │ book.setQuantity(1); │
 │ } │
 │ bookService.saveBook(book); │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Pranav S — Finance and Fine Engine Lead │
-│ 🧩 GRASP Principles Applied │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🧩 GRASP Applied │
 │ • Polymorphism → FineCalculationStrategy.java │
 │ • Information Expert → Fine.java and strategy classes │
-│ • High Cohesion → Academic/Standard strategy classes │
-│ • Low Coupling → FineService.java isolates finance policy │
-│ 💻 Code Snippet │
-│ long overdueDays = ChronoUnit.DAYS.between(dueDate, now);│
-│ String role = resolveRole(transaction); │
-│ double amount = resolveStrategy(role).calculate(overdueDays);│
-└──────────────────────────────────────────────────────────────┘
+│ • High Cohesion → One policy per strategy class │
+│ • Low Coupling → FineService.java isolates financial rules │
+│ │
+│ 💻 Snippet │
+│ long overdueDays = ChronoUnit.DAYS.between(dueDate, currentDate); │
+│ double amount = resolveStrategy(role).calculate(overdueDays); │
+│ calculatedFines.add(createOrUpdateFineForTransaction(transaction, amount));│
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Prashant Radder — Transaction Module Lead │
-│ 🧩 GRASP Principles Applied │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🧩 GRASP Applied │
 │ • Controller → TransactionController.java │
-│ • Creator (partial) → TransactionService.java saves records │
-│ • Information Expert (entity-level) → Transaction.java state│
-│ • Low Coupling → TransactionRepository via JPA abstraction │
-│ 💻 Code Snippet │
+│ • Creator (partial) → TransactionService.java persists transactions │
+│ • Information Expert → Transaction.java keeps transaction state │
+│ • Low Coupling → TransactionRepository abstraction │
+│ │
+│ 💻 Snippet │
 │ @PostMapping │
-│ public Transaction createTransaction(@RequestBody Transaction t) {│
-│ return transactionService.saveTransaction(t); │
+│ public Transaction createTransaction(@RequestBody Transaction transaction) { │
+│ return transactionService.saveTransaction(transaction); │
 │ } │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ### 📌 Coverage of 9 GRASP Principles
 
@@ -235,56 +244,64 @@ Browser/User
 
 ## 🧩 7. Design Patterns by Member
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Prajwal Kittali │
-│ 🎨 Patterns Used │
-│ • Singleton 🔒 → AuthController/AuthService/Security config │
-│ • MVC 🏛️ → Auth flow split across controller/service/view │
-│ • Proxy 🧱 → UserRepository generated by Spring Data JPA │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🎨 Patterns │
+│ • Singleton 🔒 → AuthController, AuthService, security config beans │
+│ • MVC 🏛️ → Login flow across controller/service/view │
+│ • Proxy 🧱 → UserRepository implementation generated by Spring Data JPA │
 │ • Observer 👁️ → ❌ Not Implemented Yet │
+│ │
 │ 💻 Snippet │
 │ @Service │
 │ public class AuthService extends BaseService { ... } │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Pranav G │
-│ 🎨 Patterns Used │
-│ • Singleton 🔒 → BookService/BookController beans │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🎨 Patterns │
+│ • Singleton 🔒 → BookService, BookController beans │
 │ • Template Method 🧩 → BaseService.performActionWithLogging │
 │ • Proxy 🧱 → BookRepository JPA proxy │
 │ • Factory 🏭 → ❌ Not Implemented Yet │
+│ │
 │ 💻 Snippet │
-│ return performActionWithLogging("save-book", () -> { ... },│
+│ return performActionWithLogging("save-book", () -> { ... }, │
 │ () -> bookRepository.save(book)); │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Pranav S │
-│ 🎨 Patterns Used │
-│ • Strategy 🧠 → FineCalculationStrategy + two implementations│
-│ • Singleton 🔒 → FineService and FineController │
-│ • Template Method 🧩 → BaseService in FineService │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🎨 Patterns │
+│ • Strategy 🧠 → FineCalculationStrategy + Academic/Standard implementations │
+│ • Singleton 🔒 → FineService, FineController beans │
+│ • Template Method 🧩 → BaseService used in FineService │
 │ • Facade 🪟 → ❌ Not Implemented Yet │
+│ │
 │ 💻 Snippet │
 │ return fineStrategies.stream() │
 │ .filter(s -> s.supports(role)) │
 │ .findFirst(); │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │ 👤 Prashant Radder │
-│ 🎨 Patterns Used │
-│ • MVC 🏛️ → REST transaction controller + service + model │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 🎨 Patterns │
+│ • MVC 🏛️ → REST controller + service + model flow │
 │ • Singleton 🔒 → TransactionService bean │
 │ • Builder 🧱 → ❌ Not Implemented Yet │
 │ • Observer 👁️ → ❌ Not Implemented Yet │
+│ │
 │ 💻 Snippet │
 │ @GetMapping │
 │ public List<Transaction> getAllTransactions() { │
 │ return transactionService.getAllTransactions(); │
 │ } │
-└──────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ### 📌 Required Pattern Coverage Status
 
@@ -842,4 +859,48 @@ BUILD SUCCESS
 
 ───────────────────────────────
 
-✅ README complete — 19 sections, ~4300 words
+## ✅ 20. Simple Run After Clone
+
+### 📌 Requirements
+
+- ☕ Java 17+
+- 🗄️ MySQL 8+
+- 🌐 Git
+
+### 🚀 Quick Steps
+
+```bash
+git clone https://github.com/Prajwal-Kittali-17/OOAD-Smart-Library-Management.git
+cd OOAD-Smart-Library-Management
+```
+
+Set DB variables:
+
+```bash
+# Windows (PowerShell)
+$env:DB_URL="jdbc:mysql://localhost:3306/library_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata"
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="your_mysql_password"
+```
+
+Run project:
+
+```bash
+# Windows
+.\mvnw.cmd clean test
+.\mvnw.cmd spring-boot:run
+```
+
+If 8080 is busy:
+
+```bash
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--server.port=8083"
+```
+
+Open in browser: `http://localhost:8080` (or your custom port)
+
+> 💡 Default login seeded by app (first run): `admin` / `admin123`
+
+───────────────────────────────
+
+✅ README complete — 20 sections, ~4500 words
