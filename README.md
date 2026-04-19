@@ -666,8 +666,8 @@ public List<Transaction> getAllTransactions() {
 ### ✅ Prerequisites
 
 - Java 17+ — https://adoptium.net/
-- MySQL 8+ — https://dev.mysql.com/downloads/mysql/
 - Git — https://git-scm.com/downloads
+- MySQL 8+ — optional, only if you want to override the default embedded database
 
 ### 1️⃣ Clone Repository
 
@@ -677,6 +677,9 @@ cd OOAD-Smart-Library-Management
 ```
 
 ### 2️⃣ Configure Environment Variables
+
+The app now starts with an embedded H2 database by default, so this step is optional.
+Set these variables only if you want to run against MySQL.
 
 #### 🪟 Windows (PowerShell)
 

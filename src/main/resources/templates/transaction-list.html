@@ -23,25 +23,6 @@
             <a class="link-chip" th:href="@{/fines}">Fines</a>
         </div>
 
-        <div class="panel panel-shell" style="margin-top:14px;">
-            <h2 style="margin-top:0;">Issue / Return From Transaction Page</h2>
-            <form th:action="@{/transactions/issue}" th:object="${transaction}" method="post" class="row grid-2">
-                <input class="input" type="number" th:field="*{userId}" placeholder="User ID" required>
-                <input class="input" type="number" th:field="*{bookId}" placeholder="Book ID" required>
-                <input class="input" type="number" name="dueDays" placeholder="Due Days (default 14)">
-                <label class="inline-check" style="grid-column:1 / -1;">
-                    <input type="checkbox" name="overdueDemo" value="true">
-                    Overdue Demo (-1 due days)
-                </label>
-                <button class="btn btn-accent" type="submit" style="grid-column:1 / -1;">Issue Book</button>
-            </form>
-
-            <form th:action="@{/transactions/return}" method="post" class="row" style="margin-top:12px;">
-                <input class="input" type="number" name="transactionId" placeholder="Transaction ID to Return" required>
-                <button class="btn btn-secondary" type="submit">Return Book</button>
-            </form>
-        </div>
-
         <div class="table-wrap" th:if="${!#lists.isEmpty(transactions)}">
             <table>
                 <thead>
@@ -49,20 +30,18 @@
                     <th>T/ID</th>
                     <th>User ID</th>
                     <th>Book ID</th>
-                    <th>Book Name</th>
                     <th>Issue Date</th>
-                    <th>Due Date</th>
+                    <th>Return Date</th>
                     <th>Status</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="txn : ${transactions}">
                     <td th:text="${txn.id}">1</td>
-                    <td th:text="${txn.userId}">1</td>
-                    <td th:text="${txn.bookId}">1</td>
-                    <td th:text="${bookTitleById.get(txn.bookId) != null ? bookTitleById.get(txn.bookId) : 'Unknown Book'}">Effective Java</td>
+                    <td th:text="${txn.user != null ? txn.user.id : 'Unknown'}">1</td>
+                    <td th:text="${txn.book != null ? txn.book.id : 'Unknown'}">1</td>
                     <td th:text="${txn.issueDate}">2026-04-10</td>
-                    <td th:text="${txn.dueDate}">2026-04-24</td>
+                    <td th:text="${txn.returnDate != null ? txn.returnDate : 'Not returned yet'}">2026-04-24</td>
                     <td>
                         <span class="tag" th:text="${txn.status}">ISSUED</span>
                     </td>
