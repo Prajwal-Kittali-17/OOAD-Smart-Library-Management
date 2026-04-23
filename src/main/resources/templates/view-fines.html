@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Module - Overdue Fines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+<main class="page">
+    <section class="panel panel-shell">
+        <h1 class="page-title">Overdue Fine Report</h1>
+        <p class="subtitle">Finance Module</p>
+        <p class="subtitle">Calculation Date: <strong th:text="${currentDate}">2026-04-10</strong> | Rate: Rs <strong th:text="${dailyRate}">10</strong>/day</p>
+
+        <p class="msg-success" th:if="${fineMessage}" th:text="${fineMessage}">Fine marked as PAID.</p>
+        <p class="msg-error" th:if="${fineError}" th:text="${fineError}">Unable to update fine status.</p>
+
+        <div class="link-row" aria-label="Page Actions">
+            <a class="link-chip" th:href="@{/dashboard}">Dashboard</a>
+            <a class="link-chip" th:href="@{/transactions/view}">Transactions</a>
+        </div>
+
+        <div class="table-wrap" th:if="${!#lists.isEmpty(fines)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Fine ID</th>
+                    <th>Transaction ID</th>
+                    <th>Calculated Amount (Rs)</th>
+                    <th>Payment Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="fine : ${fines}">
+                    <td th:text="${fine.id}">1</td>
+                    <td th:text="${fine.transactionId}">101</td>
+                    <td><span class="tag" th:text="${fine.amount}">50</span></td>
+                    <td>
+                        <span class="tag"
+                              th:classappend="${fine.paymentStatus == 'PAID'} ? ' tag-paid' : ' tag-pending'"
+                              th:text="${fine.paymentStatus}">PENDING</span>
+                    </td>
+                    <td>
+                        <form th:if="${fine.paymentStatus != 'PAID'}" th:action="@{/fines/{id}/pay(id=${fine.id})}" method="post">
+                            <button type="submit" class="btn">Mark as Paid</button>
+                        </form>
+                        <span th:if="${fine.paymentStatus == 'PAID'}">Completed</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="empty" th:if="${#lists.isEmpty(fines)}">No overdue transactions found. No fines generated.</p>
+
+        <div th:replace="~{fragments/layout :: moduleFooter('Finance Module', 'Pranav Sharma')}"></div>
+
+    </section>
+</main>
+</body>
+</html>

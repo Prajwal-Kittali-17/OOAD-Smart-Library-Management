@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books - Library Catalog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+<main class="page">
+    <section class="panel panel-shell">
+        <h1 class="page-title">Book Catalog</h1>
+        <p class="subtitle">Add books and browse all catalog records in one page.</p>
+
+        <div class="link-row" aria-label="Page Actions">
+            <a class="link-chip" th:href="@{/dashboard}">Dashboard</a>
+        </div>
+
+        <div class="panel form-panel" style="width:min(760px, 100%); margin:0 auto 14px;">
+            <h2 style="margin-top:0;">Add Book</h2>
+            <form th:action="@{/add-book}" th:object="${book}" method="post" class="row grid-2">
+                <input class="input" type="text" th:field="*{title}" placeholder="Title" required>
+                <input class="input" type="text" th:field="*{author}" placeholder="Author" required>
+                <input class="input" type="text" th:field="*{isbn}" placeholder="ISBN" required>
+                <input id="bookQuantity" class="input" type="number" min="1" th:field="*{quantity}" placeholder="Quantity" required>
+                <button class="btn" type="submit" style="grid-column:1 / -1;">Add Book</button>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>ISBN</th>
+                    <th>Quantity</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="bookItem : ${books}">
+                    <td th:text="${bookItem.id}">1</td>
+                    <td th:text="${bookItem.title}">Clean Code</td>
+                    <td th:text="${bookItem.author}">Robert C. Martin</td>
+                    <td th:text="${bookItem.isbn}">9780132350884</td>
+                    <td><span class="tag" th:text="${bookItem.quantity}">5</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:replace="~{fragments/layout :: moduleFooter('Catalog Module', 'Pranav Gaonkar')}"></div>
+    </section>
+</main>
+<script>
+    const quantityInput = document.getElementById('bookQuantity');
+    if (quantityInput && quantityInput.value === '0') {
+        quantityInput.value = '';
+    }
+</script>
+</body>
+</html>

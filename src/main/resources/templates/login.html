@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Library Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+<main class="page">
+    <section class="panel panel-shell form-panel">
+        <h1 class="page-title">Smart Library</h1>
+        <p class="subtitle">Security Module Login</p>
+
+        <p class="page-caption">Please sign in to continue.</p>
+
+        <form th:action="@{/login}" th:object="${user}" method="post" class="row">
+            <input class="input" type="text" th:field="*{username}" placeholder="Username" required>
+            <input class="input" type="password" th:field="*{password}" placeholder="Password" required>
+            <button class="btn" type="submit">Login</button>
+        </form>
+
+        <p class="alert alert-warning" th:if="${authRequired}" th:text="${authRequired}"></p>
+        <p class="alert alert-login-failed" th:if="${error}" th:text="${error}"></p>
+        <p class="alert alert-warning" th:if="${attemptsRemaining != null}"
+           th:text="'Security Notice: Attempts remaining before lock = ' + ${attemptsRemaining}"></p>
+        <p class="alert alert-account-locked" th:if="${locked}" th:text="${locked}"></p>
+        <p class="alert alert-success" th:if="${success}" th:text="${success}"></p>
+
+        <div class="link-row">
+            <a class="link-chip" href="/login?logout">Reset Session</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: moduleFooter('Security Module', 'Prajwal Kittali')}"></div>
+
+    </section>
+</main>
+</body>
+</html>
