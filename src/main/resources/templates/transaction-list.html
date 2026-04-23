@@ -9,19 +9,20 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/theme.css}">
     <style>
-        .form-group {
-            display: flex;
+        .transaction-shell {
+            display: grid;
+            gap: 1.25rem;
+        }
+        .form-grid {
+            display: grid;
             gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             align-items: end;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
         }
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            flex: 1;
-            min-width: 200px;
         }
         .form-field label {
             font-weight: 600;
@@ -29,14 +30,20 @@
         }
         .form-field input, .form-field select {
             padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid #c2cee3;
+            border-radius: 10px;
             font-size: 0.95rem;
+            font: inherit;
+            width: 100%;
+        }
+        .form-field input:focus, .form-field select:focus {
+            outline: 2px solid color-mix(in srgb, var(--primary) 35%, white);
+            border-color: var(--primary);
         }
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -71,16 +78,54 @@
             gap: 0.5rem;
         }
         .form-section {
-            background: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border-left: 4px solid #0066cc;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            padding: 1.25rem;
+            border-radius: 14px;
+            border: 1px solid #d7dfec;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
         }
         .form-section h2 {
             margin-top: 0;
-            font-size: 1.3rem;
-            color: #333;
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+            color: #1f2a44;
+        }
+        .subtext {
+            margin: 0 0 1rem;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+        .borrow-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .borrow-actions .btn {
+            width: 100%;
+        }
+        .book-selector {
+            display: grid;
+            gap: 0.65rem;
+            padding: 0.75rem;
+            border: 1px dashed #bfd2ee;
+            border-radius: 10px;
+            background: #f8fbff;
+        }
+        .book-selector-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #16365d;
+        }
+        .book-selector-row input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary);
+        }
+        .book-select-disabled {
+            opacity: 0.65;
         }
         .status-badge {
             padding: 0.3rem 0.8rem;
@@ -96,11 +141,20 @@
             background: #d4edda;
             color: #155724;
         }
+        .history-header {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 700px) {
+            .borrow-actions {
+                justify-content: stretch;
+            }
+        }
     </style>
 </head>
 <body>
 <main class="page">
-    <section class="panel">
+    <section class="panel transaction-shell">
         <h1 class="page-title">Transaction Records</h1>
         <p class="subtitle">Issue and return history for all users.</p>
 
@@ -114,25 +168,46 @@
 
         <!-- BORROW BOOK FORM -->
         <div class="form-section">
-            <h2>📚 Borrow a Book</h2>
+            <h2>Borrow a Book</h2>
+            <p class="subtext">Use direct Book ID entry or enable the checkbox to choose from the dropdown list.</p>
             <form method="POST" th:action="@{/transactions/borrow}">
-                <div class="form-group">
+                <div class="form-grid">
                     <div class="form-field">
                         <label for="userId">User ID</label>
                         <input type="number" id="userId" name="userId" required placeholder="Enter user ID">
                     </div>
                     <div class="form-field">
                         <label for="bookId">Book ID</label>
-                        <input type="number" id="bookId" name="bookId" required placeholder="Enter book ID">
+                        <input type="number" id="bookId" name="bookId" required placeholder="Enter book ID manually">
                     </div>
-                    <button type="submit" class="btn btn-primary">Borrow Book</button>
+                    <div class="form-field">
+                        <label>Book Picker</label>
+                        <div class="book-selector">
+                            <label class="book-selector-row" for="useBookDropdown">
+                                <input type="checkbox" id="useBookDropdown" aria-controls="bookDropdown">
+                                Use dropdown to select book
+                            </label>
+                            <select id="bookDropdown" class="book-select-disabled" disabled>
+                                <option value="">Select a book</option>
+                                <option th:each="book : ${books}"
+                                        th:value="${book.id}"
+                                        th:text="${book.title + ' (ID: ' + book.id + ', Qty: ' + book.quantity + ')'}"
+                                        th:disabled="${book.quantity <= 0}">
+                                    Book Title
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="borrow-actions">
+                        <button type="submit" class="btn btn-primary">Borrow Book</button>
+                    </div>
                 </div>
             </form>
         </div>
 
         <!-- TRANSACTION HISTORY TABLE -->
         <div class="table-wrap" th:if="${!#lists.isEmpty(transactions)}">
-            <h2 style="margin-top: 0; margin-bottom: 1rem;">Transaction History</h2>
+            <h2 class="history-header">Transaction History</h2>
             <table>
                 <thead>
                 <tr>
@@ -186,5 +261,35 @@
 
     </section>
 </main>
+<script>
+    const dropdownCheckbox = document.getElementById('useBookDropdown');
+    const bookDropdown = document.getElementById('bookDropdown');
+    const bookIdInput = document.getElementById('bookId');
+
+    function syncBookPickerState() {
+        const useDropdown = dropdownCheckbox.checked;
+        bookDropdown.disabled = !useDropdown;
+        bookDropdown.classList.toggle('book-select-disabled', !useDropdown);
+
+        if (useDropdown) {
+            bookIdInput.readOnly = true;
+            bookIdInput.placeholder = 'Book ID is auto-filled from dropdown';
+            bookIdInput.value = bookDropdown.value || '';
+        } else {
+            bookIdInput.readOnly = false;
+            bookIdInput.placeholder = 'Enter book ID manually';
+        }
+    }
+
+    if (dropdownCheckbox && bookDropdown && bookIdInput) {
+        dropdownCheckbox.addEventListener('change', syncBookPickerState);
+        bookDropdown.addEventListener('change', function () {
+            if (dropdownCheckbox.checked) {
+                bookIdInput.value = this.value;
+            }
+        });
+        syncBookPickerState();
+    }
+</script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 package com.library.Smart_Library.controller;
 
 import com.library.Smart_Library.model.Transaction;
+import com.library.Smart_Library.service.BookService;
 import com.library.Smart_Library.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,9 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
+    @Autowired
+    private BookService bookService;
+
     @GetMapping
     @ResponseBody
     public List<Transaction> getAllTransactions() {
@@ -37,6 +41,7 @@ public class TransactionController {
     @GetMapping("/view")
     public String viewTransactions(Model model) {
         model.addAttribute("transactions", transactionService.getAllTransactions());
+        model.addAttribute("books", bookService.getAllBooks());
         return "transaction-list";
     }
 
