@@ -281,7 +281,8 @@ WHERE username = 'admin';
 UPDATE users
 SET failed_attempts = 0,
     is_locked = b'0'
-WHERE username = 'admin';
+WHERE id > 0
+  AND is_locked = b'1';
 
 -- ----------------------------------------------------------------------------
 -- SECTION 11: CLEAN IMMUTABILITY NOTE

@@ -8,6 +8,95 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/theme.css}">
+    <style>
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        .form-field label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .form-field input, .form-field select {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0052a3;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .action-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .form-section {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #0066cc;
+        }
+        .form-section h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #333;
+        }
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-issued {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-returned {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
 </head>
 <body>
 <main class="page">
@@ -23,34 +112,75 @@
             <a class="link-chip" th:href="@{/fines}">Fines</a>
         </div>
 
+        <!-- BORROW BOOK FORM -->
+        <div class="form-section">
+            <h2>📚 Borrow a Book</h2>
+            <form method="POST" th:action="@{/transactions/borrow}">
+                <div class="form-group">
+                    <div class="form-field">
+                        <label for="userId">User ID</label>
+                        <input type="number" id="userId" name="userId" required placeholder="Enter user ID">
+                    </div>
+                    <div class="form-field">
+                        <label for="bookId">Book ID</label>
+                        <input type="number" id="bookId" name="bookId" required placeholder="Enter book ID">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Borrow Book</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TRANSACTION HISTORY TABLE -->
         <div class="table-wrap" th:if="${!#lists.isEmpty(transactions)}">
+            <h2 style="margin-top: 0; margin-bottom: 1rem;">Transaction History</h2>
             <table>
                 <thead>
                 <tr>
                     <th>T/ID</th>
                     <th>User ID</th>
-                    <th>Book ID</th>
+                    <th>Book</th>
                     <th>Issue Date</th>
+                    <th>Due Date</th>
                     <th>Return Date</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="txn : ${transactions}">
                     <td th:text="${txn.id}">1</td>
                     <td th:text="${txn.user != null ? txn.user.id : 'Unknown'}">1</td>
-                    <td th:text="${txn.book != null ? txn.book.id : 'Unknown'}">1</td>
-                    <td th:text="${txn.issueDate}">2026-04-10</td>
-                    <td th:text="${txn.returnDate != null ? txn.returnDate : 'Not returned yet'}">2026-04-24</td>
                     <td>
-                        <span class="tag" th:text="${txn.status}">ISSUED</span>
+                        <span th:if="${txn.book != null}" th:text="${txn.book.title} + ' (ID: ' + txn.book.id + ')'">Book Title</span>
+                        <span th:unless="${txn.book != null}">Unknown</span>
+                    </td>
+                    <td th:text="${txn.issueDate}">2026-04-10</td>
+                    <td th:text="${txn.dueDate}">2026-04-24</td>
+                    <td th:text="${txn.returnDate != null ? txn.returnDate : 'Not returned'}">2026-04-24</td>
+                    <td>
+                        <span class="status-badge" 
+                              th:classappend="${txn.status == 'ISSUED' ? 'status-issued' : 'status-returned'}"
+                              th:text="${txn.status}">ISSUED</span>
+                    </td>
+                    <td>
+                        <div class="action-cell">
+                            <form method="POST" th:action="@{/transactions/return}" style="display: inline;">
+                                <input type="hidden" name="transactionId" th:value="${txn.id}">
+                                <button type="submit" 
+                                        class="btn btn-secondary"
+                                        th:disabled="${txn.status != 'ISSUED'}"
+                                        th:title="${txn.status == 'ISSUED' ? 'Return book' : 'Already returned'}">
+                                    Return
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <p class="empty" th:if="${#lists.isEmpty(transactions)}">No transactions found yet.</p>
+        <p class="empty" th:if="${#lists.isEmpty(transactions)}">No transactions found yet. Start by borrowing a book!</p>
 
         <div th:replace="~{fragments/layout :: moduleFooter('Transaction Module', 'Prashant Radder')}"></div>
 

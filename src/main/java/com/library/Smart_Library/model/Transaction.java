@@ -2,7 +2,15 @@ package com.library.Smart_Library.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
+/**
+ * Owner: Prashant R
+ * SRN: NOT-PROVIDED
+ * Purpose: Track book circulation (issue/return) and overdue fines.
+ * GRASP: Information Expert for managing transaction lifecycle.
+ * Pattern: Persisted through Spring Data JPA proxy repositories.
+ */
 @Entity
 public class Transaction {
 
@@ -17,6 +25,8 @@ public class Transaction {
     private Book book;
 
     private LocalDateTime issueDate;
+
+    private LocalDate dueDate;
 
     private LocalDateTime returnDate;
 
@@ -54,6 +64,14 @@ public class Transaction {
 
     public void setIssueDate(LocalDateTime issueDate) {
         this.issueDate = issueDate;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
     public LocalDateTime getReturnDate() {
